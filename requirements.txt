@@ -1,3 +1,4 @@
 pyTelegramBotAPI==3.2.1
 rethinkdb==2.3.0.post6
 cherrypy==11.0.0
+APScheduler==3.3.1
