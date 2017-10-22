@@ -19,7 +19,7 @@ def str_to_time(string: str):
 
 
 def parse_time(str_time):
-    pattern = r'(?P<hour>\d{1,2}):?.?(?P<minute>\d{1,2}) ?- ?(?P<action>.+)'
+    pattern = r'(?P<hour>\d{1,2}):?\.?(?P<minute>\d{1,2}) ?- ?(?P<action>.+)'
     time = re.findall(pattern, str_time, re.IGNORECASE)
     return {time_to_str(datetime.time(hour=int(note[0]), minute=int(note[1]))): note[2] for note in time}
 
@@ -34,10 +34,10 @@ def convert_time_from_msk(time: datetime.time, tz=0):
 
 def check_timetable(database):
     current = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=3)))
-    current_time = current.time()
+    current_time = current.time().replace(minute=current.minute + 9)
     current_weekday = list(constants.days_of_week_long)[current.weekday()]
-    forward_time = current_time.replace(minute=current_time.minute + 10) if current_time.minute < 50 else \
-        current_time.replace(hour=current_time.hour + 1, minute=60 - current_time.minute)
+    forward_time = current_time.replace(minute=current_time.minute + 2) if current_time.minute < 50 else \
+        current_time.replace(hour=current_time.hour + 1, minute=current_time.minute - 49)
     timetables_to_notify = {}
     for user in database.get_all():
         user_timedelta = user['settings']['timezone']

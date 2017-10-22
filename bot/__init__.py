@@ -155,5 +155,5 @@ def delete_timetable_3(call):
 
 
 utils.notify()
-scheduler.add_job(utils.notify, 'interval', seconds=600)
+scheduler.add_job(utils.notify, 'interval', seconds=60)
 scheduler.start()
