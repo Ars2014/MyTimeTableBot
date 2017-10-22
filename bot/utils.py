@@ -40,8 +40,8 @@ def check_timetable(database):
         current_time.replace(hour=current_time.hour + 1, minute=current_time.minute - 49)
     timetables_to_notify = {}
     for user in database.get_all():
-        user_timedelta = user['settings']['timezone']
-        note_time = user['timetable'].get(current_weekday, {})
+        user_timedelta = user.get('settings', {}).get('timezone', 0)
+        note_time = user.get('timetable', {}).get(current_weekday, {})
         if not note_time:
             pass
         for time in note_time:
