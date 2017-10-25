@@ -4,59 +4,46 @@ import datetime
 import logging
 import re
 
+from daytime import Daytime
+
 from bot import constants, ui
 
 logger = logging.getLogger('MyTimeTable')
 
 
-def time_to_str(time: datetime.time):
-    return time.strftime('%H:%M')
-
-
-def str_to_time(string: str):
-    time = string.split(':')
-    return datetime.time(hour=int(time[0]), minute=int(time[1]))
+MSK_TIMEZONE = datetime.timezone(datetime.timedelta(hours=3))
 
 
 def parse_time(str_time):
-    pattern = r'(?P<hour>\d{1,2}):?\.?(?P<minute>\d{1,2}) ?- ?(?P<action>.+)'
-    time = re.findall(pattern, str_time, re.IGNORECASE)
-    return {time_to_str(datetime.time(hour=int(note[0]), minute=int(note[1]))): note[2] for note in time}
-
-
-def convert_time_to_msk(time: datetime.time, tz=0):
-    return time.replace(hour=time.hour - tz)
-
-
-def convert_time_from_msk(time: datetime.time, tz=0):
-    return time.replace(hour=time.hour + tz)
+    pattern = r'(?P<hour>\d{1,2}) ?[:|\.] ?(?P<minute>\d{1,2}) ?- ?(?P<action>.+)'
+    notes = re.findall(pattern, str_time, re.IGNORECASE)
+    return {'{0}:{1}'.format(note[0], note[1]): note[2] for note in notes}
 
 
 def check_timetable(database):
-    current = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=3)))
-    current_time = current.time().replace(minute=current.minute + 9)
-    current_weekday = list(constants.days_of_week_long)[current.weekday()]
-    forward_time = current_time.replace(minute=current_time.minute + 2) if current_time.minute < 50 else \
-        current_time.replace(hour=current_time.hour + 1, minute=current_time.minute - 49)
-    timetables_to_notify = {}
+    current_msk = Daytime.fromtime(datetime.datetime.now(MSK_TIMEZONE))
+    current_weekday = constants.weekdays[datetime.datetime.now(MSK_TIMEZONE).weekday()]
+    interval_start = current_msk + 540
+    interval_stop = current_msk + 600
+    print(interval_start, interval_stop)
+    for_notifying = {}
     for user in database.get_all():
-        user_timedelta = user.get('settings', {}).get('timezone', 0)
-        note_time = user.get('timetable', {}).get(current_weekday, {})
-        if not note_time:
-            pass
-        for time in note_time:
-            if current_time < convert_time_to_msk(str_to_time(time), user_timedelta) <= forward_time:
-                if timetables_to_notify.get(user['id']):
-                    timetables_to_notify[user['id']].append({time: note_time[time]})
-                else:
-                    timetables_to_notify[user['id']] = [{time: note_time[time]}]
+        user_delta = user.get('settings', {}).get('timezone', 0)
+        timetable = user.get('timetable', {}).get(current_weekday, {})
+        if timetable:
+            for time, note in timetable.items():
+                if interval_start < Daytime.strptime(time, '%H:%M') - datetime.timedelta(hours=user_delta) < interval_stop:
+                    if for_notifying.get(user['id']):
+                        for_notifying[user['id']].append({time: note})
+                    else:
+                        for_notifying[user['id']] = [{time: note}]
 
-    return timetables_to_notify
+    return for_notifying
 
 
-def notify():
-    from bot import bot, database
+def notify(bot, database):
     raw_notes = check_timetable(database)
+    print(raw_notes)
     ready_notes = {}
 
     logger.info('Notifying')

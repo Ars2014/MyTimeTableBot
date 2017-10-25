@@ -50,7 +50,7 @@ def get_timetable(msg):
     bot.send_message(msg.chat.id, ui.text['days'], reply_markup=ui.days_keyboard_inline, parse_mode='HTML')
 
 
-@bot.callback_query_handler(func=lambda call: call.data in constants.days_of_week_long.keys())
+@bot.callback_query_handler(func=lambda call: call.data in constants.weekdays)
 def timetable_for_day(call):
     timetables = database.get_timetable(call.from_user.id).get(call.data)
     timetable = '\n'.join([' - '.join((a, b)) for a, b in timetables.items()]) if timetables else 'Пусто.'
@@ -58,6 +58,8 @@ def timetable_for_day(call):
     try:
         bot.edit_message_text(txt, call.from_user.id, call.message.message_id, reply_markup=ui.days_keyboard_inline, parse_mode='HTML')
     except telebot.apihelper.ApiException:
+        pass
+    finally:
         bot.answer_callback_query(call.id)
 
 
@@ -69,7 +71,7 @@ def change_timetable(msg):
     states[msg.chat.id] = 'change'
 
 
-@bot.message_handler(func=lambda msg: msg.text in constants.days_of_week_long.keys() and states.get(msg.chat.id) == 'change')
+@bot.message_handler(func=lambda msg: msg.text in constants.weekdays and states.get(msg.chat.id) == 'change')
 def change_timetable_2(msg):
     if states[msg.chat.id] == 'cancel':
         return
@@ -129,7 +131,7 @@ def delete_timetable(msg):
     states[msg.chat.id] = 'delete'
 
 
-@bot.message_handler(func=lambda msg: msg.text in constants.days_of_week_long.keys() and states.get(msg.chat.id) == 'delete')
+@bot.message_handler(func=lambda msg: msg.text in constants.weekdays and states.get(msg.chat.id) == 'delete')
 def delete_timetable_2(msg):
     if states[msg.chat.id] == 'cancel':
         return
@@ -145,7 +147,7 @@ def delete_timetable_2(msg):
     bot.send_message(msg.chat.id, ui.text['choose_delete'].format(notes=notes), reply_markup=keyboard, parse_mode='HTML')
 
 
-@bot.callback_query_handler(func=lambda call: states.get(call.from_user.id) in constants.days_of_week_long.keys())
+@bot.callback_query_handler(func=lambda call: states.get(call.from_user.id) in constants.weekdays)
 def delete_timetable_3(call):
     database.delete_note(call.from_user.id, states[call.from_user.id], call.data)
     bot.edit_message_reply_markup(call.from_user.id, call.message.message_id)
@@ -154,6 +156,6 @@ def delete_timetable_3(call):
     bot.send_message(call.from_user.id, ui.text['success'], reply_markup=keyboard)
 
 
-utils.notify()
-scheduler.add_job(utils.notify, 'interval', seconds=60)
+utils.notify(bot, database)
+scheduler.add_job(utils.notify, 'interval', seconds=60, args=(bot, database))
 scheduler.start()

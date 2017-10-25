@@ -7,7 +7,7 @@ from bot import constants
 buttons = {
     'main': [['Всё расписание', constants.emoji['change_timetable']],
              [constants.emoji['delete'], constants.emoji['settings'], constants.emoji['rate']]],
-    'days': [list(constants.days_of_week_long.keys()) + [constants.emoji['cancel']]],
+    'days': [constants.weekdays + [constants.emoji['cancel']]],
     'user_input': [constants.emoji['cancel']],
     'cancel': [['Главное меню']],
     'settings': [['Изменить часовой пояс'], ['Главное меню']],
@@ -31,7 +31,7 @@ text = {
 }
 
 days_keyboard_inline = types.InlineKeyboardMarkup(row_width=4)
-days_keyboard_inline.add(*[types.InlineKeyboardButton(day, callback_data=day) for day in constants.days_of_week_long.keys()])
+days_keyboard_inline.add(*[types.InlineKeyboardButton(day, callback_data=day) for day in constants.weekdays])
 
 
 def generate_menu(name):
