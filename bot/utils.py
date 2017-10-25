@@ -25,7 +25,6 @@ def check_timetable(database):
     current_weekday = constants.weekdays[datetime.datetime.now(MSK_TIMEZONE).weekday()]
     interval_start = current_msk + 540
     interval_stop = current_msk + 600
-    print(interval_start, interval_stop)
     for_notifying = {}
     for user in database.get_all():
         user_delta = user.get('settings', {}).get('timezone', 0)
@@ -43,7 +42,6 @@ def check_timetable(database):
 
 def notify(bot, database):
     raw_notes = check_timetable(database)
-    print(raw_notes)
     ready_notes = {}
 
     logger.info('Notifying')
