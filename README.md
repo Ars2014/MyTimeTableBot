@@ -1,5 +1,6 @@
 # MyTimeTable
 ![Version: 0.2.2](https://img.shields.io/badge/version-0.2.2-brightgreen.svg?style=flat-square)  [![Roadmap](https://img.shields.io/badge/Roadmap-here-brightgreen.svg?style=flat-square)](https://trello.com/b/GuQeA6lF/mytimetable)
+
 Telgram bot that saves your time and paper
 
 ## Dependencies
