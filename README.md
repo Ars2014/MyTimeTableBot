@@ -21,6 +21,7 @@ To install bot make sure you have this dependencies:
 7. (For webhook) Configure gunicorn. [See example here](https://github.com/Ars2014/MyTimeTableBot/blob/master/examples/gunicorn.conf.py)*.
 8. Run bot with `python main.py`.
 9. (Optional) Add bot to [supervisor](http://supervisord.org/) or [systemd](https://wiki.freedesktop.org/www/Software/systemd/)
+
 \* - All examples from working project. Some lines changed for privacy.
 
 ### Special thanks to 
